@@ -135,8 +135,6 @@ def lseven():
             continue
         button = floorplan.find_element_by_class_name("rpfp-button--availability")
         driver.execute_script("arguments[0].click();", button)
-        #wait.until(lambda driver: driver.execute_script('return jQuery.active == 0'))
-        #wait.until(EC.presence_of_element_located((By.CLASS_NAME, "rpfp-units")))
         units = driver.find_elements_by_class_name("rpfp-unit")
         for unit in units:
             bed_type = unit.find_element_by_class_name("rpfp-beds").get_attribute("innerText")
