@@ -127,7 +127,7 @@ def soma_square():
 def lseven():
     print("Extracting L Seven Apartments...")
     load("https://www.l7sf.com/floor-plans")
-    #floorplans = driver.find_elements_by_class_name("rpfp-units")
+    time.sleep(1)
     floorplans = driver.find_elements_by_class_name("rpfp-card")
     data = {}
     for floorplan in floorplans:
@@ -135,14 +135,18 @@ def lseven():
             continue
         button = floorplan.find_element_by_class_name("rpfp-button--availability")
         driver.execute_script("arguments[0].click();", button)
-        units = driver.find_elements_by_class_name("rpfp-unit")
+        time.sleep(0.2)
+        units = driver.find_element_by_class_name("fancybox3-inner").find_elements_by_class_name("rpfp-unit")
         for unit in units:
             bed_type = unit.find_element_by_class_name("rpfp-beds").get_attribute("innerText")
             if bed_type not in data:
                 data[bed_type] = []
             price = unit.find_element_by_class_name("rpfp-unit-rent").get_attribute("innerText")
+            if price == "":
+                continue
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
+            #print(bed_type + " " + price)
         #availability = int(floorplan.get_attribute("data-availableunits"))
         #if availability == 0:
         #    continue
@@ -211,7 +215,7 @@ def avalon():
     data["0"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=0BD")
     data["1"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=1BD")
     data["2"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=2BD")
-    data["3"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=3BD")
+    #data["3"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=3BD")
     printData(data)
 
 def run():
