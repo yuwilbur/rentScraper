@@ -67,7 +67,7 @@ def remapData(data, mapping):
     for key, value in data.items():
         if key not in mapping.keys():
             print("ERROR: Key [" + key + "] cannot be found in mapping.")
-            result[key] = value;
+            #result[key] = value;
         else:
             result[mapping[key]] = value;
     return result
@@ -99,7 +99,7 @@ def bayside():
             price = price.split(" ")[0]
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
-    data = remapData(data, {"STUDIO": "0", "1 BED": "1", "2 BED": "2", "3 BED": "3"})
+    data = remapData(data, {"STUDIO": "0", "1 BED": "1", "2 BED": "2"})
     printData(data)
 
 def soma_square():
@@ -121,7 +121,7 @@ def soma_square():
                 data[bed_type].append(int(price))
             except NoSuchElementException:
                 data[bed_type] = []
-    data = remapData(data, {"Studio": "0", "1Bed": "1", "2Bed": "2", "3Bed": "3"})
+    data = remapData(data, {"Studio": "0", "1Bed": "1", "2Bed": "2"})
     printData(data)
 
 def lseven():
@@ -157,7 +157,7 @@ def lseven():
         #    price = floorplan.find_element_by_class_name("rpfp-rent").get_attribute("innerText")
         #    price = price.split("$")[1].replace('$','').replace(',','')
         #    data[bed_type].append(int(price))
-    data = remapData(data, {"0 BD": "0", "1 BD": "1", "2 BD": "2", "3 BD": "3"})
+    data = remapData(data, {"0 BD": "0", "1 BD": "1", "2 BD": "2"})
     printData(data)
 
 def rincongreen():
@@ -175,7 +175,7 @@ def rincongreen():
             price = unit.find_elements_by_tag_name("td")[3].get_attribute("innerText")
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
-    data = remapData(data, {"S": "0", "1": "1", "2": "2", "3": "3"})
+    data = remapData(data, {"S": "0", "1": "1", "2": "2"})
     printData(data)
 
 def soma788():
@@ -193,7 +193,7 @@ def soma788():
             price = unit.find_elements_by_tag_name("td")[3].get_attribute("innerText")
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
-    data = remapData(data, {"S": "0", "1": "1", "2": "2", "3": "3"})
+    data = remapData(data, {"S": "0", "1": "1", "2": "2"})
     printData(data)
 
 def avalon_extract(url):
@@ -219,12 +219,12 @@ def avalon():
     printData(data)
 
 def run():
-    #bayside()
-    #soma_square()
+    bayside()
+    soma_square()
     lseven()
-    #rincongreen()
-    #soma788()
-    #avalon()
+    rincongreen()
+    soma788()
+    avalon()
 
 def test():
     data = {}
