@@ -104,30 +104,28 @@ def bayside():
 
 def soma_square():
     print("Extracting SoMa Square Apartments...")
-    load("https://www.equityapartments.com/san-francisco-bay/soma/soma-square-apartments##unit-availability-tile")
-    bed_type_sections = driver.find_element_by_id("unit-availability-tile").find_elements_by_class_name("bedroom-type-section")
+    load("https://www.apartments.com/soma-square-san-francisco-ca/8zcfk91/")
+    bed_type_sections = driver.find_element_by_xpath("//*[@class='tab-section active']").find_elements_by_xpath("//*[@class='pricingGridItem multiFamily hasUnitGrid']")
     data = {}
     for bed_type_section in bed_type_sections:
-        bed_type = bed_type_section.find_element_by_class_name("panel-title").get_attribute("innerText")
-        bed_type = bed_type.replace(' ','').replace('\r','').replace('\n','')
-        bed_type = bed_type
+        bed_type = bed_type_section.find_element_by_class_name("modelName").get_attribute("innerText").split()[0]
         if bed_type not in data:
             data[bed_type] = []
-        units = bed_type_section.find_elements_by_class_name("list-group-item")
+        units = bed_type_section.find_elements_by_class_name("unitGridContainer")
         for unit in units:
             try:
-                price = unit.find_element_by_class_name("pricing").get_attribute("innerText")
+                price = unit.find_element_by_xpath("//*[@class='pricingColumn column']").get_attribute("innerText")
                 price = price.split("$")[1].replace('$','').replace(',','')
                 data[bed_type].append(int(price))
             except NoSuchElementException:
                 data[bed_type] = []
-    data = remapData(data, {"Studio": "0", "1Bed": "1", "2Bed": "2"})
+    data = remapData(data, {"Studio": "0", "1": "1", "2": "2"})
     printData(data)
 
 def lseven():
     print("Extracting L Seven Apartments...")
     load("https://www.l7sf.com/floor-plans")
-    time.sleep(1)
+    time.sleep(5)
     floorplans = driver.find_elements_by_class_name("rpfp-card")
     data = {}
     for floorplan in floorplans:
@@ -219,12 +217,12 @@ def avalon():
     printData(data)
 
 def run():
-    bayside()
+    #bayside()
     soma_square()
-    lseven()
-    rincongreen()
-    soma788()
-    avalon()
+    #lseven()
+    #rincongreen()
+    #soma788()
+    #avalon()
 
 def test():
     data = {}
