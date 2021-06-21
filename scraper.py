@@ -108,17 +108,19 @@ def soma_square():
     bed_type_sections = driver.find_element_by_xpath("//*[@class='tab-section active']").find_elements_by_xpath("//*[@class='pricingGridItem multiFamily hasUnitGrid']")
     data = {}
     for bed_type_section in bed_type_sections:
-        bed_type = bed_type_section.find_element_by_class_name("modelName").get_attribute("innerText").split()[0]
+        bed_type = bed_type_section.find_element_by_class_name("modelName")
+        #print(bed_type.get_attribute("innerText"))
+        bed_type = bed_type.get_attribute("innerText").split()[0]
         if bed_type not in data:
             data[bed_type] = []
-        units = bed_type_section.find_elements_by_class_name("unitGridContainer")
+        units = bed_type_section.find_elements_by_class_name("unitContainer")
         for unit in units:
             try:
-                price = unit.find_element_by_xpath("//*[@class='pricingColumn column']").get_attribute("innerText")
-                price = price.split("$")[1].replace('$','').replace(',','')
+                price = unit.find_element_by_class_name("pricingColumn")
+                price = price.get_attribute("innerText").split("$")[1].replace('$','').replace(',','')
                 data[bed_type].append(int(price))
             except NoSuchElementException:
-                data[bed_type] = []
+                    data[bed_type] = []
     data = remapData(data, {"Studio": "0", "1": "1", "2": "2"})
     printData(data)
 
@@ -217,12 +219,12 @@ def avalon():
     printData(data)
 
 def run():
-    #bayside()
+    bayside()
     soma_square()
-    #lseven()
-    #rincongreen()
-    #soma788()
-    #avalon()
+    lseven()
+    rincongreen()
+    soma788()
+    avalon()
 
 def test():
     data = {}
