@@ -72,9 +72,10 @@ def remapData(data, mapping):
             result[mapping[key]] = value;
     return result
 
-def load(url):
+def load(url, waitForLoad=True):
     driver.get(url)
-    wait.until(lambda driver: driver.execute_script('return jQuery.active == 0'))
+    if (waitForLoad):
+        wait.until(lambda driver: driver.execute_script('return jQuery.active == 0'))
 
 def bayside():
     print("Extracting Bayside Village Place...")
@@ -123,41 +124,29 @@ def soma_square():
                     data[bed_type] = []
     data = remapData(data, {"Studio": "0", "1": "1", "2": "2"})
     printData(data)
+    
 
 def lseven():
     print("Extracting L Seven Apartments...")
-    load("https://www.l7sf.com/floor-plans")
-    time.sleep(5)
-    floorplans = driver.find_elements_by_class_name("rpfp-card")
+    load("https://www.l7sf.com/OnlineLeasing.aspx")
+    time.sleep(10)
+    driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
+    floorplans = driver.find_elements_by_class_name('floorplan-tile')
     data = {}
     for floorplan in floorplans:
-        if floorplan.get_attribute("data-availableunits") is None or int(floorplan.get_attribute("data-availableunits")) == 0:
+        availability = floorplan.find_element_by_class_name("primary").get_attribute("innerText")
+        if "Check" in availability:
             continue
-        button = floorplan.find_element_by_class_name("rpfp-button--availability")
-        driver.execute_script("arguments[0].click();", button)
-        time.sleep(0.2)
-        units = driver.find_element_by_class_name("fancybox3-inner").find_elements_by_class_name("rpfp-unit")
-        for unit in units:
-            bed_type = unit.find_element_by_class_name("rpfp-beds").get_attribute("innerText")
-            if bed_type not in data:
-                data[bed_type] = []
-            price = unit.find_element_by_class_name("rpfp-unit-rent").get_attribute("innerText")
-            if price == "":
-                continue
-            price = price.split("$")[1].replace('$','').replace(',','')
+        availability = availability.split("(")[1].split(")")[0].replace('(','')
+        price = floorplan.find_element_by_class_name("range").get_attribute("innerText")
+        price = price.split("$")[1].replace('$','').replace(',','').replace(' -','').replace('*','')
+        bed_type = floorplan.find_element_by_class_name("specs").get_attribute("innerText")
+        bed_type = bed_type.split("|")[0].replace(' ','')
+        if bed_type not in data:
+            data[bed_type] = []
+        for x in range(int(availability)):
             data[bed_type].append(int(price))
-            #print(bed_type + " " + price)
-        #availability = int(floorplan.get_attribute("data-availableunits"))
-        #if availability == 0:
-        #    continue
-        #bed_type = floorplan.find_element_by_class_name("rpfp-beds").get_attribute("innerText")
-        #if bed_type not in data:
-        #    data[bed_type] = []
-        #for i in range(int(floorplan.find_element_by_class_name("rpfp-badge").get_attribute("innerText"))):
-        #    price = floorplan.find_element_by_class_name("rpfp-rent").get_attribute("innerText")
-        #    price = price.split("$")[1].replace('$','').replace(',','')
-        #    data[bed_type].append(int(price))
-    data = remapData(data, {"0 BD": "0", "1 BD": "1", "2 BD": "2"})
+    data = remapData(data, {"Studio": "0", "1Bed": "1", "2Beds": "2"})
     printData(data)
 
 def rincongreen():
