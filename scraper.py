@@ -9,11 +9,13 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
+from webdriver_manager.chrome import ChromeDriverManager
 
 options = webdriver.ChromeOptions()
 options.add_experimental_option('excludeSwitches', ['enable-logging'])
-options.add_argument("--start-maximized")
-driver = webdriver.Chrome(options=options)
+options.add_argument("--ignore-certification")
+options.add_argument("--ignore-ssl-errors")
+driver = webdriver.Chrome(ChromeDriverManager().install(), options=options)
 wait = WebDriverWait(driver, 60)
 
 def computeData(data):
@@ -46,7 +48,8 @@ def printData(data):
     data = computeData(data)
     pprint.pprint(data)
     result = ""
-    for key, value in data.items():
+    for key in sorted(data.keys()):
+        value = data[key]
         result += str(value["mean"]) if value["vacancy"] > 0 else ""
         result += ","
         result += str(value["min"]) if value["vacancy"] > 0 else ""
@@ -67,7 +70,6 @@ def remapData(data, mapping):
     for key, value in data.items():
         if key not in mapping.keys():
             print("ERROR: Key [" + key + "] cannot be found in mapping.")
-            #result[key] = value;
         else:
             result[mapping[key]] = value;
     return result
@@ -75,18 +77,11 @@ def remapData(data, mapping):
 def load(url, waitForLoad=True):
     driver.get(url)
     if (waitForLoad):
-        wait.until(lambda driver: driver.execute_script('return jQuery.active == 0'))
+        wait.until(lambda driver: driver.execute_script('return window.jQuery != undefined && jQuery.active == 0'))
 
 def bayside():
-    print("Extracting Bayside Village Place...")
     load("https://baysidevillage.com/floor-plans/")
-    # datepicker = driver.find_element_by_id("floorplan-datepicker")
-    # datepicker.clear()
-    # today = datetime.datetime.now()
-    # next_month = today + dateutil.relativedelta.relativedelta(months=+1)
-    # date = next_month.strftime("%m/%d/%Y")
-    # datepicker.send_keys(date)
-    # wait.until(lambda driver: driver.execute_script('return jQuery.active == 0'))
+    print("Extracting Bayside Village Place...")
     floorplans = driver.find_elements_by_class_name("floorplan-item")
     data = {}
     for floorplan in floorplans:
@@ -110,7 +105,6 @@ def soma_square():
     data = {}
     for bed_type_section in bed_type_sections:
         bed_type = bed_type_section.find_element_by_class_name("modelName")
-        #print(bed_type.get_attribute("innerText"))
         bed_type = bed_type.get_attribute("innerText").split()[0]
         if bed_type not in data:
             data[bed_type] = []
@@ -185,26 +179,57 @@ def soma788():
     data = remapData(data, {"S": "0", "1": "1", "2": "2"})
     printData(data)
 
-def avalon_extract(url):
-    load(url)
-    result = []
-    prices = driver.find_elements_by_class_name("price")
-    for price in prices:
-            try:
-                price = price.find_element_by_class_name("brand-main-text-color").get_attribute("innerText")
-                price = price.split("$")[1].replace('$','').replace(',','')
-                result.append(int(price))
-            except NoSuchElementException:
-                continue
-    return result
-
 def avalon():
     print("Extracting Avalon...")
+    load("https://new.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/")
+    driver.find_element_by_class_name("ant-modal-close").click()
+    driver.execute_script("arguments[0].click();", driver.find_element_by_id("load-all-units"))
     data = {}
-    data["0"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=0BD")
-    data["1"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=1BD")
-    data["2"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=2BD")
-    #data["3"] = avalon_extract("https://www.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/apartments?bedroom=3BD")
+    units = driver.find_elements_by_class_name("unit-item-details")
+    for unit in units:
+        info = unit.find_element_by_class_name("description").get_attribute("innerText")
+        bed_type = info.split("•")[0].replace(' ','').replace('Furnished','')
+        if bed_type not in data:
+            data[bed_type] = []
+        price = unit.find_element_by_class_name("unit-price").get_attribute("innerText").replace(' ','').replace('$','').replace(',','')
+        data[bed_type].append(int(price))
+    data = remapData(data, {"Studio": "0", "1bed": "1", "2beds": "2"})
+    printData(data)
+
+def george():
+    print("Extract George...")
+    load("https://www.thegeorgesf.com/apartment-availability.html", False)
+    time.sleep(10)
+    data = {}
+    driver.switch_to.frame(driver.find_element_by_id("sightmap"))
+    floors_list = driver.find_element_by_id("floor-horizontal-select")
+    floors = floors_list.find_elements_by_tag_name("li")
+    for i in range(len(floors)):
+        if i < 2:
+            continue
+        floor = floors[i]
+        driver.execute_script("arguments[0].click();", floor)
+        floorplans = driver.find_element_by_class_name("list-item-container").find_elements_by_tag_name("a")
+        for floorplan in floorplans:
+            innerText = floorplan.get_attribute("innerText")
+            if "Studio" in innerText:
+                bed_type = "0"
+            elif "1 Bed" in innerText:
+                bed_type = "1"
+            elif "2 Bed" in innerText:
+                bed_type = "2"
+            else:
+                continue
+            price = ""
+            innerTextSplit = innerText.replace('\n',' ' ).split(" ")
+            for text in innerTextSplit:
+                if "$" in text:
+                    price = text
+                    break
+            price = price.replace('$','').replace(',','')
+            if bed_type not in data:
+                data[bed_type] = []
+            data[bed_type].append(int(price))
     printData(data)
 
 def run():
@@ -214,6 +239,7 @@ def run():
     rincongreen()
     soma788()
     avalon()
+    george()
 
 def test():
     data = {}
