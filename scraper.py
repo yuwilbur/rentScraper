@@ -82,16 +82,16 @@ def load(url, waitForLoad=True):
 def bayside():
     load("https://baysidevillage.com/floor-plans/")
     print("Extracting Bayside Village Place...")
-    floorplans = driver.find_elements_by_class_name("floorplan-item")
+    floorplans = driver.find_elements(By.CLASS_NAME, "floorplan-item")
     data = {}
     for floorplan in floorplans:
-        bed_type = floorplan.find_element_by_class_name("bed-count").get_attribute("innerText")
+        bed_type = floorplan.find_element(By.CLASS_NAME, "bed-count").get_attribute("innerText")
         bed_type = bed_type.split(" /")[0]
         if bed_type not in data:
             data[bed_type] = []
-        units = floorplan.find_elements_by_class_name("fp-detail-unit")
+        units = floorplan.find_elements(By.CLASS_NAME, "fp-detail-unit")
         for unit in units:
-            price = unit.find_elements_by_tag_name("li")[2].get_attribute("innerText")
+            price = unit.find_elements(By.TAG_NAME, "li")[2].get_attribute("innerText")
             price = price.split(" ")[0]
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
@@ -101,17 +101,17 @@ def bayside():
 def soma_square():
     print("Extracting SoMa Square Apartments...")
     load("https://www.apartments.com/soma-square-san-francisco-ca/8zcfk91/")
-    bed_type_sections = driver.find_element_by_xpath("//*[@class='tab-section active']").find_elements_by_xpath("//*[@class='pricingGridItem multiFamily hasUnitGrid']")
+    bed_type_sections = driver.find_element(By.XPATH, "//*[@class='tab-section active']").find_elements(By.XPATH, "//*[@class='pricingGridItem multiFamily hasUnitGrid']")
     data = {}
     for bed_type_section in bed_type_sections:
-        bed_type = bed_type_section.find_element_by_class_name("modelName")
+        bed_type = bed_type_section.find_element(By.CLASS_NAME, "modelName")
         bed_type = bed_type.get_attribute("innerText").split()[0]
         if bed_type not in data:
             data[bed_type] = []
-        units = bed_type_section.find_elements_by_class_name("unitContainer")
+        units = bed_type_section.find_elements(By.CLASS_NAME, "unitContainer")
         for unit in units:
             try:
-                price = unit.find_element_by_class_name("pricingColumn")
+                price = unit.find_element(By.CLASS_NAME, "pricingColumn")
                 price = price.get_attribute("innerText").split("$")[1].replace('$','').replace(',','')
                 data[bed_type].append(int(price))
             except NoSuchElementException:
@@ -124,17 +124,17 @@ def lseven():
     print("Extracting L Seven Apartments...")
     load("https://www.l7sf.com/OnlineLeasing.aspx")
     time.sleep(10)
-    driver.switch_to.frame(driver.find_element_by_tag_name("iframe"))
-    floorplans = driver.find_elements_by_class_name('floorplan-tile')
+    driver.switch_to.frame(driver.find_element(By.TAG_NAME, "iframe"))
+    floorplans = driver.find_elements(By.CLASS_NAME, 'floorplan-tile')
     data = {}
     for floorplan in floorplans:
-        availability = floorplan.find_element_by_class_name("primary").get_attribute("innerText")
+        availability = floorplan.find_element(By.CLASS_NAME, "primary").get_attribute("innerText")
         if "Check" in availability:
             continue
         availability = availability.split("(")[1].split(")")[0].replace('(','')
-        price = floorplan.find_element_by_class_name("range").get_attribute("innerText")
+        price = floorplan.find_element(By.CLASS_NAME, "range").get_attribute("innerText")
         price = price.split("$")[1].replace('$','').replace(',','').replace(' -','').replace('*','')
-        bed_type = floorplan.find_element_by_class_name("specs").get_attribute("innerText")
+        bed_type = floorplan.find_element(By.CLASS_NAME, "specs").get_attribute("innerText")
         bed_type = bed_type.split("|")[0].replace(' ','')
         if bed_type not in data:
             data[bed_type] = []
@@ -146,16 +146,16 @@ def lseven():
 def rincongreen():
     print("Extracting Rincon Green Apartments...")
     load("https://www.rincongreen.com/Floor-plans.aspx")
-    floorplans = driver.find_elements_by_class_name("floorplan-block")
+    floorplans = driver.find_elements(By.CLASS_NAME, "floorplan-block")
     data = {}
     for floorplan in floorplans:
         bed_type = floorplan.get_attribute("data-bed")
         if bed_type not in data:
             data[bed_type] = []
-        units = floorplan.find_element_by_class_name("par-units").find_elements_by_tag_name("tr")
+        units = floorplan.find_element(By.CLASS_NAME, "par-units").find_elements(By.TAG_NAME, "tr")
         units.pop(0)
         for unit in units:
-            price = unit.find_elements_by_tag_name("td")[3].get_attribute("innerText")
+            price = unit.find_elements(By.TAG_NAME, "td")[3].get_attribute("innerText")
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
     data = remapData(data, {"S": "0", "1": "1", "2": "2"})
@@ -164,16 +164,16 @@ def rincongreen():
 def soma788():
     print("Extracting SOMA at 788...")
     load("https://www.somaat788.com/Floor-plans.aspx")
-    floorplans = driver.find_elements_by_class_name("floorplan-block")
+    floorplans = driver.find_elements(By.CLASS_NAME, "floorplan-block")
     data = {}
     for floorplan in floorplans:
         bed_type = floorplan.get_attribute("data-bed")
         if bed_type not in data:
             data[bed_type] = []
-        units = floorplan.find_element_by_class_name("par-units").find_elements_by_tag_name("tr")
+        units = floorplan.find_element(By.CLASS_NAME, "par-units").find_elements(By.TAG_NAME, "tr")
         units.pop(0)
         for unit in units:
-            price = unit.find_elements_by_tag_name("td")[3].get_attribute("innerText")
+            price = unit.find_elements(By.TAG_NAME, "td")[3].get_attribute("innerText")
             price = price.split("$")[1].replace('$','').replace(',','')
             data[bed_type].append(int(price))
     data = remapData(data, {"S": "0", "1": "1", "2": "2"})
@@ -182,16 +182,16 @@ def soma788():
 def avalon():
     print("Extracting Avalon...")
     load("https://new.avaloncommunities.com/california/san-francisco-apartments/avalon-at-mission-bay/")
-    driver.find_element_by_class_name("ant-modal-close").click()
-    driver.execute_script("arguments[0].click();", driver.find_element_by_id("load-all-units"))
+    driver.find_element(By.CLASS_NAME, "ant-modal-close").click()
+    driver.execute_script("arguments[0].click();", driver.find_element(By.ID, "load-all-units"))
     data = {}
-    units = driver.find_elements_by_class_name("unit-item-details")
+    units = driver.find_elements(By.CLASS_NAME, "unit-item-details")
     for unit in units:
-        info = unit.find_element_by_class_name("description").get_attribute("innerText")
+        info = unit.find_element(By.CLASS_NAME, "description").get_attribute("innerText")
         bed_type = info.split("•")[0].replace(' ','').replace('Furnished','')
         if bed_type not in data:
             data[bed_type] = []
-        price = unit.find_element_by_class_name("unit-price").get_attribute("innerText").replace(' ','').replace('$','').replace(',','')
+        price = unit.find_element(By.CLASS_NAME, "unit-price").get_attribute("innerText").replace(' ','').replace('$','').replace(',','')
         data[bed_type].append(int(price))
     data = remapData(data, {"Studio": "0", "1bed": "1", "2beds": "2"})
     printData(data)
@@ -201,15 +201,15 @@ def george():
     load("https://www.thegeorgesf.com/apartment-availability.html", False)
     time.sleep(10)
     data = {}
-    driver.switch_to.frame(driver.find_element_by_id("sightmap"))
-    floors_list = driver.find_element_by_id("floor-horizontal-select")
-    floors = floors_list.find_elements_by_tag_name("li")
+    driver.switch_to.frame(driver.find_element(By.ID, "sightmap"))
+    floors_list = driver.find_element(By.ID, "floor-horizontal-select")
+    floors = floors_list.find_elements(By.TAG_NAME, "li")
     for i in range(len(floors)):
         if i < 2:
             continue
         floor = floors[i]
         driver.execute_script("arguments[0].click();", floor)
-        floorplans = driver.find_element_by_class_name("list-item-container").find_elements_by_tag_name("a")
+        floorplans = driver.find_element(By.CLASS_NAME, "list-item-container").find_elements(By.TAG_NAME, "a")
         for floorplan in floorplans:
             innerText = floorplan.get_attribute("innerText")
             if "Studio" in innerText:
